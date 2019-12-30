@@ -29,6 +29,8 @@ def plot_ROC(FP_array, TP_array, showTitle=False, showLegend=True,
     if rows > len(COLORS):
         raise ValueError('Only enough colors set for ' + str(len(COLORS)) +\
                          ' datasets, need to code more')
+    if Legend is None:
+        Legend = ['']*FP_array.shape[1]
     ORIGIN = np.zeros(rows)
     #Put (0,0) and (1,1) on every curve
     FP_array = np.c_[ORIGIN.reshape([rows,1]), FP_array, (ORIGIN+1).reshape([rows,1])]
@@ -47,6 +49,7 @@ def plot_ROC(FP_array, TP_array, showTitle=False, showLegend=True,
         ax.plot(FP_array[i], TP_array[i], label=Legend[i], c=COLORS[i])
     if showLegend:
         ax.legend(loc='lower right')
+    plt.tight_layout()
 
 def main(): #for debugging
     linear = np.linspace(.2,.8,5)

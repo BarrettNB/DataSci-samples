@@ -2,6 +2,12 @@
 """
 Machine Learning project part 1.
 
+(1) Use KNN to impute missing data.
+(2) Using KNN, random forests, logistic regressions, and linear SVCs to
+    train the data.
+(3) Write ROC statistics: Accuracy, precision, specificity, etc. A "positive"
+    is taken as the mode of the training outputs ("labels").
+
 Created on Tue Nov 12 13:34:15 2019
 
 @author: Barrett
@@ -21,19 +27,19 @@ from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn.svm import LinearSVC
 
 KNN_ALG = 0; RAND_FOREST = 1; LOG_REG = 2; LIN_SVC = 3
-algorithmsToRun = [1] #Set this to the desired algorithms.
+algorithmsToRun = [0,2] #Set this to the desired algorithms.
 
 MISSING = (1e99, 1e9)
 DATA_LISTS = tuple(range(6))
 TRUNC_DATA_LISTS = tuple(range(2,6)) #when we want to exclude datasets 1 and 2
 
 analyzeError = True#; analyzeError = False
-calcEigs = True#; calcEigs = False
+calcEigs = True; calcEigs = False
 loadBigEigs = True; loadBigEigs = False #Set to FALSE on first run (if calcEigs==True)
 loadDataFromScratch = True; loadDataFromScratch = False #Set to TRUE on first run
-plotROC = True; plotROC = False
+plotROC = True#; plotROC = False
 printModeStats = True#; printModeStats = False
-saveCleanedData = True; saveCleanedData = False
+saveCleanedData = True; saveCleanedData = False #Set to True for faster future runs
 
 stopwatch = TimeTracker.TimeTracker()
 params = ((1,3,5,11,21), #KNN
@@ -79,13 +85,12 @@ else:
         testData.append(np.load('testData' + str(i+1) + '.npy'))
 N_data = len(trainData)
 
-modes = []; modeID = []
+modeID = []
 for i in DATA_LISTS:
     if printModeStats:
         print('    Portion of trainLabel' + str(i+1) + ' == mode:',
               round(mode(trainLabel[i])[1][0]/len(trainLabel[i]),3))
-    modes.append(mode(trainLabel[i])[0][0])
-    modeID.append(np.where(np.unique(trainLabel[i]) == modes[i])[0][0])
+    modeID.append(np.where(np.unique(trainLabel[i]) == mode(trainLabel[i])[0][0])[0][0])
 
 '''Set up the analyses.
 Dimensions: Algorithm, dataset, algorithm parameters'''
@@ -146,7 +151,7 @@ for i, run in enumerate(algorithmsToRun):
     useReducedData = run not in (KNN_ALG, RAND_FOREST)
     n = params[run]
     M = len(n)
-    data_sets = DATA_LISTS
+    data_sets = list(DATA_LISTS)
 #    y_test = []
 #    for ell, j in enumerate(DATA_LISTS):
 #        y_test.append(np.zeros([testData[j].shape[0], M]))
@@ -177,7 +182,8 @@ for i, run in enumerate(algorithmsToRun):
                 precision[i][j,ell] = Analytics.precision(tp, fp, tn, fn)
                 F1_score[i][j,ell] = Analytics.F1_score(tp, fp, tn, fn)
         print('    ' + str(ell+1) + ' of ' + str(M) + ' complete')
-    if analyzeError and plotROC:
+if analyzeError and plotROC:
+    for i, run in enumerate(algorithmsToRun): #Waits to show graphs until after analyses
         for j in data_sets:
             sorter = FP_array[i][j].argsort() #x coord on ROC curve
             TP_array[i][j] = TP_array[i][j][sorter]
@@ -188,8 +194,8 @@ for i, run in enumerate(algorithmsToRun):
             precision[i][j] = precision[i][j][sorter]
             F1_score[i][j] = F1_score[i][j][sorter]
         ROC_curve.plot_ROC(FP_array[i][data_sets], TP_array[i][data_sets],\
-           True, True, [' (KNN)', ' (Random forest)', '(Logistic regression)',\
-            ' (Linear SVC)'][run], 1+np.array(data_sets))
+           True, True, [' (KNN)', ' (Random forest)', ' (Logistic regression)',\
+           ' (Linear SVC)'][run], 1+np.array(data_sets))
 #    if saveYs:
 #        for ell, curr_dataID in enumerate(DATA_LISTS):
 #            np.save('y_test' + str(curr_dataID+1), y_test[ell])
