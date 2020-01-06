@@ -3,3 +3,5 @@ A machine learning project that attempts to distinguish between samples of circu
 
 This is a continuation of the project documented in Zhao, Jorba et al., Computational and Structural Biotechnology
 Journal 15 (2017) 456–462.
+
+The script to run is cVDPV_vs_iVDPV.py. Be sure all the directories are right before running it.
